@@ -1,0 +1,9 @@
+README.md
+pyproject.toml
+ingen_pydev/__init__.py
+ingen_pydev.egg-info/PKG-INFO
+ingen_pydev.egg-info/SOURCES.txt
+ingen_pydev.egg-info/dependency_links.txt
+ingen_pydev.egg-info/requires.txt
+ingen_pydev.egg-info/top_level.txt
+tests/test_scaffold.py
