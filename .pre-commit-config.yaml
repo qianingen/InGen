@@ -14,3 +14,4 @@ repos:
     hooks:
       - id: mypy
         args: ["--strict", "ingen_pydev", "tests"]
+        pass_filenames: false
