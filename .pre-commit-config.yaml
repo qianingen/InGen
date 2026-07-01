@@ -13,6 +13,7 @@ repos:
     rev: v1.13.0
     hooks:
       - id: mypy
+        pass_filenames: false
         args: ["--strict", "ingen_pydev", "tests"]
         additional_dependencies:
           - pytest
