@@ -1,9 +1,9 @@
 import pytest
 
-from ingen_pydev.algo.spatial_index import SpatialIndex2D
+from ingen_pydev.algo.spatial_index import SpatialIndex2D, SpatialItem
 
 
-def item_ids(items: list) -> set[str]:
+def item_ids(items: list[SpatialItem]) -> set[str]:
     return {item.item_id for item in items}
 
 
