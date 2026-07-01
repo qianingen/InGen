@@ -1,87 +1,112 @@
 # W01 Physical AI Python Developer Landscape
 
-## Scope Note
+## 1. Scope and Confidentiality Boundary
 
-This brief is based on public-facing product descriptions, open-source tooling, and public-safe assumptions only. It does not describe InGen internal architecture, private source code, proprietary APIs, customer data, or confidential technical documentation.
+This brief is a public-safe Python developer landscape. The provided product and platform materials were used only to understand general engineering direction. This document does not include internal source code, private architecture diagrams, screenshots, customer data, confidential performance metrics, proprietary API details, or direct excerpts from internal documents.
 
-Where this brief discusses technical structure, it is framed as a reasonable design hypothesis or proposed Python module candidate. The goal is not to reconstruct InGen’s actual implementation, but to translate public product narratives into concrete Python development surfaces that could be explored with public datasets, synthetic data, and open-source libraries.
+The goal is not to reproduce InGen’s internal implementation. The goal is to identify where a Python developer can build useful public-safe modules using synthetic data, public datasets, and open-source tooling.
 
-## 1. Public Product Narrative to Python Developer Surface
+The guiding question for Week 1 is:
 
-The Week 1 development question is: given a high-level Physical AI product narrative, what kinds of data would a Python engineer likely handle, and what module would be useful to build first?
+> Given a physical-AI platform direction, what kinds of data would a Python developer likely handle, and what small public-safe modules could be built around that data?
 
-For a Physical AI system, the useful Python surface is usually not the product slogan itself. The useful surface is the data moving through the system: telemetry records, video frames, task queues, retrieved text chunks, model outputs, evaluation logs, and benchmark results. A strong Python module should make one of those data flows easier to ingest, validate, process, test, or evaluate.
+## 2. Platform-Level Engineering Map
 
-## 2. Platform Developer Briefs
+The clearest platform-level abstraction is a physical-AI compute cycle.
 
-### Fari
+A robot-like system receives sensor data, calibrates noisy readings, estimates uncertainty, updates task state, selects or simulates an action, checks safety constraints, and records an audit log.
 
-Based on public descriptions, Fari can be treated as an eldercare companion platform with a likely need for conversational memory, domain knowledge retrieval, and response evaluation. A Python engineer would likely handle text queries, retrieved context chunks, embeddings, conversation turns, safety/evaluation labels, generated responses, and token/cost logs.
+A public-safe simulator can represent this as:
 
-A proposed Python module would be a public-safe RAG pipeline for eldercare-style question answering: document chunking, embedding, retrieval, prompt assembly, response generation, and faithfulness/cost reporting. This module would not use private user data; it would use public or synthetic eldercare-style documents and mock conversations.
+```text
+synthetic robot sensor packet
+→ calibration / residual calculation
+→ uncertainty scoring
+→ task-state update
+→ candidate action selection
+→ safety gate
+→ audit log
+```
 
-### Senpai
+This does not require access to real robot data or internal models. It only requires a clean Python representation of the data flow.
 
-Based on public descriptions, Senpai can be treated as an educational robot or tutoring assistant. A Python engineer would likely handle curriculum documents, student questions, expected answer ranges, tutoring scenarios, response-quality scores, and evaluation records.
+| Stage               | Engineering role                            | Python data handled                                       | Public-safe module candidate |
+| ------------------- | ------------------------------------------- | --------------------------------------------------------- | ---------------------------- |
+| Sensor ingestion    | Structure robot-like input data             | timestamp, sensor readings, battery, task ID, event flags | `schemas.py`                 |
+| Calibration         | Estimate and correct noisy readings         | raw value, expected value, residual, corrected value      | `calibration.py`             |
+| Uncertainty scoring | Decide whether the state is reliable enough | residuals, stale time, confidence, threshold flags        | `uncertainty.py`             |
+| Task state          | Track the current task or subtask           | task ID, current phase, preconditions, status             | `task_state.py`              |
+| Action selection    | Select or simulate next action              | state, task, uncertainty, candidate action                | `policy_stub.py`             |
+| Safety gate         | Accept, reject, or escalate action          | action, rule checks, rejection reason                     | `safety_gate.py`             |
+| Audit log           | Record the decision path                    | input state, uncertainty, action, safety result           | `audit_log.py`               |
 
-A proposed Python module would be a tutoring evaluation harness that loads public/synthetic learning scenarios, generates or receives answers, and scores them for correctness, helpfulness, grounding, and clarity. This connects naturally to YAML scenario loading, RAG retrieval, LLM judge outputs, and cost-aware evaluation.
+## 3. PIC Model Class to Python Module Mapping
 
-### Sentinel Prime AI
+The following table converts the PIC-style model classes into public-safe Python module candidates. This is an engineering abstraction, not a claim about internal implementation.
 
-Based on public descriptions, Sentinel Prime AI can be treated as a security/computer-vision platform. A Python engineer would likely handle video frames, image arrays, timestamps, keyframe indices, motion masks, alert events, bounding regions, and latency measurements.
+| PIC class | Engineering meaning                                         | Python module candidate           |
+| --------- | ----------------------------------------------------------- | --------------------------------- |
+| HTD-IRL   | Break a high-level task into smaller executable task states | `task_graph.py` / `task_state.py` |
+| AMDC      | Calibrate or correct noisy sensor readings                  | `calibration.py`                  |
+| STUM      | Estimate uncertainty from sensor noise and state staleness  | `uncertainty.py`                  |
+| GRPO      | Select actions or skills from state/task/reward context     | `policy_stub.py`                  |
+| SEOM      | Reject unsafe actions and record safety reasons             | `safety_gate.py`                  |
+| CRL-MRS   | Coordinate multiple robot agents or fleet tasks             | `fleet_coordination.py`           |
 
-A proposed Python module would be an OpenCV utility library for keyframe extraction, motion-change detection, and image preprocessing on public outdoor/security datasets. The module should report both accuracy-style metrics and latency per frame, because security vision systems need useful detections without excessive processing delay.
+For Week 2+, the implementation should not attempt to reproduce full internal AI models. A better public-safe approach is to simulate the engineering contract: structured state in, uncertainty-aware decision out, safety checked, audit logged.
 
-### Aido Rover
+## 4. Product Developer Surface
 
-Based on public descriptions, Aido Rover can be treated as an outdoor mobile robotics platform. A Python engineer would likely handle timestamped telemetry streams such as GPS-like coordinates, distance readings, battery state, wheel or drive status, ambient temperature, patrol events, and anomaly flags.
+The product files suggest different Python developer surfaces. For Week 1, the goal is not to deeply implement each product. The goal is to identify what type of data each product direction implies.
 
-A proposed Python module would be a telemetry ingestion and validation pipeline that reads synthetic rover-style data, validates schema, handles missing or noisy readings, computes rolling features, and exports clean data for downstream anomaly detection or benchmarking. This is a good primary development anchor because telemetry data can be simulated safely without internal robot access.
+| Product           | Product role                             | Likely Python data handled                                                                   | Public-safe module candidate                                  | Priority   |
+| ----------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------- |
+| Origami / PIC 2.0 | Physical-AI platform layer               | sensor state, task state, uncertainty score, candidate action, safety result, audit log      | mini PIC compute-cycle simulator                              | Highest    |
+| Aido Rover        | Outdoor inspection and security robot    | telemetry, LiDAR-like readings, location, battery, environmental readings, inspection events | sensor pipeline + uncertainty + anomaly/audit log             | High       |
+| Aido Humanoid     | Bipedal humanoid / manipulation platform | task queue, actuator state, grasp/action plans, safety events, failure logs                  | task/action safety simulator or manipulation failure analyzer | High       |
+| Sentinel Prime AI | Security intelligence platform           | video events, detection confidence, false alerts, evidence clips, audit logs                 | detection-event evaluator with uncertainty and audit trail    | Medium     |
+| Fari              | Eldercare / healthcare companion         | session logs, health events, fall/medication/emotion records, escalation decisions           | care-event safety/evaluation harness                          | Medium-low |
+| Senpai            | Education companion robot                | curriculum data, student interactions, learning progress, tutoring responses                 | tutoring-response evaluator                                   | Medium-low |
+| Carry & Go        | Indoor delivery robot                    | delivery tasks, route events, building/elevator state, payload, battery, timing records      | delivery-task scheduler                                       | Low-medium |
 
-### Aido Humanoid
+## 5. Real-Time / Physical AI Complexity Primer
 
-Based on public descriptions, Aido Humanoid can be treated as a bipedal or humanoid robotics research platform where sequencing and prioritizing actions matters. A Python engineer would likely handle task IDs, priorities, deadlines, worker or actuator availability, action queues, scheduling decisions, and state-transition logs.
+Physical-AI software is different from ordinary backend or notebook code because it may sit close to sensor streams, action decisions, and safety constraints.
 
-A proposed Python module would be a priority task scheduler that selects the highest-priority non-expired task using a heap-based data structure. This module is useful as a public-safe algorithm exercise because it can be tested without hardware while still connecting to real robotics constraints such as bounded scheduling time and predictable behavior under load.
+The first constraint is predictable latency. Sensor validation, residual calculation, uncertainty scoring, and safety checking should be bounded, testable, and fast. Slow batch analytics, visualization, and report generation should be separated from the fast path.
 
-## 3. Origami / PIC 2.0 Model-Class Mapping
+The second constraint is uncertainty-aware behavior. A physical-AI system should not only output an action. It should know when the input state is unreliable, when to delay, and when to escalate to a safer fallback.
 
-The following mapping is conceptual. It identifies Python processing patterns and open-source libraries that could support public-safe experiments around PIC 2.0-style model classes. It is not a claim about InGen’s internal implementation.
+The third constraint is safety gating. A robot-like system should not execute an action only because a policy selected it. It should check the action against safety constraints before execution.
 
-| PIC 2.0 Class | Python Processing Pattern                               | Possible Open-Source Library                     | Proposed Module Candidate                                                                                |
-| ------------- | ------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| GRPO          | Reinforcement learning / policy optimization            | PyTorch                                          | `pic/grpo_policy.py` for policy experiment scaffolding, reward logging, and simple policy-update tests   |
-| STUM          | Streaming temporal update over sensor-like data         | `collections.deque`, `river`, or pandas          | `pic/stum_stream.py` for rolling state updates, anomaly flags, and time-window features                  |
-| SEOM          | Spatial environment object modeling and spatial queries | `shapely`, `scipy.spatial`, or custom grid index | `pic/seom_spatial.py` for zones, points, radius queries, and patrol-space utilities                      |
-| AMDC          | Action/mission decision control                         | `networkx`, `heapq`, or `scipy.optimize`         | `pic/amdc_planner.py` for decision graphs, constraints, and mission-state transitions                    |
-| HTD-IRL       | Trajectory learning / inverse reinforcement learning    | PyTorch                                          | `pic/htd_irl.py` for public trajectory datasets, reward-shaping experiments, and demonstration analysis  |
-| CRL-MRS       | Multi-agent coordination and message passing            | `asyncio`, ROS 2 `rclpy`, or `pydantic` messages | `pic/crl_mrs.py` for robot-agent message schemas, async event passing, and coordination-state simulation |
+The fourth constraint is auditability. Every action-like decision should leave a record: observed state, uncertainty score, selected action, safety result, and reason for acceptance or rejection.
 
-## 4. Complexity Primer for Real-Time Physical AI Systems
+## 6. Recommended Direction
 
-Physical AI software has different constraints from normal web or notebook code because it may sit near sensor streams and decision loops. A slow Python function is not only inconvenient; it can cause downstream modules to work with stale data. For this reason, the first engineering principle is predictable latency.
+The recommended next direction is a public-safe mini PIC compute-cycle simulator anchored on Rover and Humanoid-style data.
 
-The second principle is bounded complexity. If a module processes a stream of 100,000 telemetry records, an accidental O(n²) implementation can become unusable as input size grows. Sliding-window algorithms, spatial indexes, priority queues, and vectorized operations matter because they keep runtime behavior predictable.
+The simulator would take synthetic robot sensor packets as input and produce:
 
-The third principle is robustness to messy data. Physical systems receive missing, noisy, delayed, or saturated sensor readings. A useful Python module should validate schemas, handle missing values explicitly, flag anomalies, and include tests for edge cases instead of assuming perfect input.
+```text
+calibrated state
+uncertainty score
+candidate action
+safety result
+audit log
+```
 
-The fourth principle is reproducibility. Since this project is public-safe and open-source, every result should be reproducible from a clean install and a one-command test run. This makes the work reviewable and prevents hidden local-environment dependencies from becoming part of the project.
+A possible module layout:
 
-## 5. Week 1 Engineering Takeaways
+```text
+ingen_pydev/
+  pic_cycle/
+    schemas.py
+    calibration.py
+    uncertainty.py
+    task_state.py
+    policy_stub.py
+    safety_gate.py
+    audit_log.py
+```
 
-The Week 1 scaffold establishes the engineering frame before real modules are built. The repository now has package structure, dependency management, formatting, linting, strict type checking, pre-commit hooks, tests, and GitHub Actions CI.
-
-The main design decision is to separate public product narrative from implementation claims. The platform descriptions provide useful anchors, but the proposed modules are framed as public-safe developer candidates rather than descriptions of InGen’s internal architecture.
-
-The next technical step is the Week 2 algorithm library: sliding-window telemetry aggregation, spatial indexing, and priority task scheduling. These modules should be type-hinted, tested, benchmarked against naïve baselines, and documented with Big-O complexity notes.
-
-## 6. References to Add
-
-Add exact links to the public sources actually used before final submission:
-
-* Public InGen product pages for Fari, Senpai, Sentinel Prime AI, Aido Rover/Humanoid, and Origami/PIC 2.0
-* Python engineering style reference such as Google Python Style Guide or Hypermodern Python
-* ROS 2 Python or robotics middleware overview
-* Public robotics/sensor-stream reference on data rates, latency, or real-time constraints
-* Public paper or article on embedded/real-time algorithm design
-* Public datasets or dataset organizations considered for later weeks, such as robotics, outdoor video, or security-camera datasets
+This direction is stronger than disconnected algorithm exercises because it creates one runnable system with clear input, output, tests, benchmarks, and demo value. It also stays aligned with the platform context while avoiding confidential implementation details.
