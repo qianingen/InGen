@@ -1,0 +1,11 @@
+{
+  "rows_processed": 10000,
+  "rows_flagged": 1184,
+  "fields_with_anomalies_detected": [
+    "gps",
+    "lidar_distance_m",
+    "battery_soc",
+    "wheel_torque",
+    "ambient_temp_c"
+  ]
+}

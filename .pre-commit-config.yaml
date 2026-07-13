@@ -17,3 +17,14 @@ repos:
         args: ["--strict", "ingen_pydev", "tests"]
         additional_dependencies:
           - pytest
+  
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        pass_filenames: false
+        args: ["ingen_pydev", "tests", "W02_Algo_Module.py", "W03_Telemetry_Pipeline.py", "W03_Pipeline_Tests.py"]
+        additional_dependencies:
+          - pytest
+          - pandas-stubs
+          - numpy
