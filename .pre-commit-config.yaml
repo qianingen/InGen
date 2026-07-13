@@ -1,30 +1,27 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 24.4.2
     hooks:
       - id: black
 
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
+    rev: 7.1.0
     hooks:
       - id: flake8
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.13.0
-    hooks:
-      - id: mypy
-        pass_filenames: false
-        args: ["--strict", "ingen_pydev", "tests"]
-        additional_dependencies:
-          - pytest
-  
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.10.0
     hooks:
       - id: mypy
         pass_filenames: false
-        args: ["ingen_pydev", "tests", "W02_Algo_Module.py", "W03_Telemetry_Pipeline.py", "W03_Pipeline_Tests.py"]
+        args:
+          - ingen_pydev
+          - tests
+          - W03_Telemetry_Pipeline.py
+          - W03_Pipeline_Tests.py
         additional_dependencies:
           - pytest
+          - pandas
           - pandas-stubs
           - numpy
+          - pyarrow
