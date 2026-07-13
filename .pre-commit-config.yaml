@@ -17,8 +17,6 @@ repos:
         args:
           - ingen_pydev
           - tests
-          - W03_Telemetry_Pipeline.py
-          - W03_Pipeline_Tests.py
         additional_dependencies:
           - pytest
           - pandas
