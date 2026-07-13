@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from typing import Any
 
 BATTERY_WINDOW = 50
 EARTH_RADIUS_M = 6_371_000.0
@@ -33,7 +34,10 @@ def add_telemetry_features(df: pd.DataFrame) -> pd.DataFrame:
 
     if "lidar_saturated" in out.columns:
         out["lidar_saturation_rate"] = (
-            out["lidar_saturated"].astype(float).rolling(BATTERY_WINDOW, min_periods=1).mean()
+            out["lidar_saturated"]
+            .astype(float)
+            .rolling(BATTERY_WINDOW, min_periods=1)
+            .mean()
         )
     else:
         out["lidar_saturation_rate"] = 0.0
@@ -46,7 +50,8 @@ def add_telemetry_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _cumulative_distance_from_gps(
-    lat_series: pd.Series, lon_series: pd.Series
+    lat_series: pd.Series[Any],
+    lon_series: pd.Series[Any],
 ) -> npt.NDArray[np.float64]:
     lat = np.radians(lat_series.astype(float).to_numpy())
     lon = np.radians(lon_series.astype(float).to_numpy())
@@ -70,7 +75,7 @@ def _cumulative_distance_from_gps(
     return distances
 
 
-def _wheel_imbalance_score(df: pd.DataFrame) -> pd.Series:
+def _wheel_imbalance_score(df: pd.DataFrame) -> pd.Series[Any]:
     wheel_values = df.loc[:, TORQUE_COLUMNS]
     mean_torque = wheel_values.mean(axis=1).replace(0.0, np.nan)
     imbalance = (wheel_values.max(axis=1) - wheel_values.min(axis=1)) / mean_torque

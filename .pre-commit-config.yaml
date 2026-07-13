@@ -1,3 +1,6 @@
+default_language_version:
+  python: python3.11
+
 repos:
   - repo: https://github.com/psf/black
     rev: 24.4.2
@@ -13,13 +16,15 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
+        language_version: python3.11
         pass_filenames: false
         args:
+          - --python-version=3.11
           - ingen_pydev
           - tests
         additional_dependencies:
           - pytest
-          - pandas
-          - pandas-stubs
-          - numpy
+          - pandas==2.2.2
+          - pandas-stubs==2.2.2.240603
+          - numpy==1.26.4
           - pyarrow

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import pandas as pd
 
@@ -54,4 +56,5 @@ def test_lidar_saturation_is_interpolated_and_flagged() -> None:
     cleaned = clean_telemetry(df)
 
     assert bool(cleaned.loc[2, "lidar_saturated"]) is True
-    assert cleaned.loc[2, "lidar_distance_m"] > 0.0
+    lidar_value = cast(float, cleaned.loc[2, "lidar_distance_m"])
+    assert lidar_value > 0.0

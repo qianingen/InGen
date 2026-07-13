@@ -7,9 +7,9 @@ private robot logs, private APIs, or internal production data.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 
 LIDAR_MAX_RANGE_M = 200.0
@@ -91,9 +91,10 @@ def _sample_indices(
     rows: int,
     rate: float,
     start: int = 0,
-) -> npt.NDArray[np.int64]:
+) -> list[int]:
     count = max(1, int(rows * rate))
-    return rng.choice(np.arange(start, rows), size=count, replace=False)
+    sampled = rng.choice(np.arange(start, rows), size=count, replace=False)
+    return [int(index) for index in sampled.tolist()]
 
 
 def _inject_gps_dropout(
@@ -102,7 +103,8 @@ def _inject_gps_dropout(
     rate: float,
 ) -> None:
     indices = _sample_indices(rng, len(df), rate)
-    df.loc[indices, ["lat", "lon"]] = np.nan
+    df.loc[indices, "lat"] = np.nan
+    df.loc[indices, "lon"] = np.nan
 
 
 def _inject_lidar_saturation(
@@ -112,8 +114,12 @@ def _inject_lidar_saturation(
 ) -> None:
     indices = _sample_indices(rng, len(df), rate)
     half = len(indices) // 2
-    df.loc[indices[:half], "lidar_distance_m"] = 0.0
-    df.loc[indices[half:], "lidar_distance_m"] = LIDAR_MAX_RANGE_M
+
+    zero_indices = indices[:half]
+    max_indices = indices[half:]
+
+    df.loc[zero_indices, "lidar_distance_m"] = 0.0
+    df.loc[max_indices, "lidar_distance_m"] = LIDAR_MAX_RANGE_M
 
 
 def _inject_battery_drops(
@@ -122,8 +128,9 @@ def _inject_battery_drops(
     rate: float,
 ) -> None:
     indices = _sample_indices(rng, len(df), rate, start=1)
+
     for index in indices:
-        previous = float(df.loc[index - 1, "battery_soc"])
+        previous = float(cast(float, df.loc[index - 1, "battery_soc"]))
         drop = float(rng.uniform(21.0, 30.0))
         df.loc[index, "battery_soc"] = max(0.0, previous - drop)
 
@@ -142,10 +149,13 @@ def _inject_noise_spikes(
         "wheel_torque_rr",
         "ambient_temp_c",
     ]
+
     indices = _sample_indices(rng, len(df), rate)
+
     for index in indices:
         column = str(rng.choice(sensor_columns))
-        value = float(df.loc[index, column])
+        value = float(cast(float, df.loc[index, column]))
+
         if column == "battery_soc":
             df.loc[index, column] = np.clip(value + rng.normal(0.0, 15.0), 0.0, 100.0)
         elif column == "lidar_distance_m":

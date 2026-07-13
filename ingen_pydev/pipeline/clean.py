@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from typing import Any
 
 from ingen_pydev.algo.sliding_window import SlidingWindowTelemetry
 
@@ -81,10 +82,10 @@ def _flag_noise_spikes(
 
 
 def _sliding_window_spike_flags(
-    series: pd.Series,
+    series: pd.Series[Any],
     window_size: int,
     z_threshold: float,
-) -> pd.Series:
+) -> pd.Series[Any]:
     detector = SlidingWindowTelemetry(
         window_size=window_size,
         anomaly_z_threshold=z_threshold,
