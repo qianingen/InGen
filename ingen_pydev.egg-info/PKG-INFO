@@ -3,6 +3,12 @@ Name: ingen-pydev
 Version: 0.1.0
 Summary: Public-safe Python development scaffold for Physical AI engineering modules.
 Requires-Python: >=3.11
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: pyarrow
+Requires-Dist: pandas-stubs
+Requires-Dist: sqlalchemy
+Requires-Dist: alembic
 Provides-Extra: dev
 Requires-Dist: pytest>=8.0; extra == "dev"
 Requires-Dist: pre-commit>=3.5; extra == "dev"

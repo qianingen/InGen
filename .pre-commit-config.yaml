@@ -28,3 +28,4 @@ repos:
           - pandas-stubs==2.2.2.240603
           - numpy==1.26.4
           - pyarrow
+          - sqlalchemy==2.0.36

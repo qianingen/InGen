@@ -1,3 +1,9 @@
+pandas
+numpy
+pyarrow
+pandas-stubs
+sqlalchemy
+alembic
 
 [dev]
 pytest>=8.0

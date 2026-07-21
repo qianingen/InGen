@@ -7,7 +7,7 @@ name = "ingen-pydev"
 version = "0.1.0"
 description = "Public-safe Python development scaffold for Physical AI engineering modules."
 requires-python = ">=3.11"
-dependencies = ["pandas", "numpy", "pyarrow", "pandas-stubs"]
+dependencies = ["pandas", "numpy", "pyarrow", "pandas-stubs", "sqlalchemy", "alembic"]
 
 [project.optional-dependencies]
 dev = [
