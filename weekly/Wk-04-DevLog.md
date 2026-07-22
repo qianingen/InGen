@@ -7,7 +7,7 @@ The main engineering improvement was replacing the earlier row-level loading pat
 I benchmarked five representative queries before and after adding three targeted indexes. The query that benefited most from indexing was the GPS-dropout time-range query, and why it improved was clear from the query plan: the composite index on `(gps_dropout_long, timestamp_ms)` allowed SQLite to avoid a full-table scan and use a covering index for the requested fields. At one million rows, median latency decreased from 466.23 ms to 0.0756 ms, or approximately 6,167×. This result is query-specific and should not be interpreted as a 6,167× improvement to the entire database.
 
 All 15 before-and-after query results were identical. The full suite finished with 49 tests passing, and black, flake8, and mypy all passed. Next week I will use these validated components as the foundation for the Phase C and Phase D work.
-
+```mermaid
 erDiagram
     DEVICE ||--o{ SESSION : has
     DEVICE ||--o{ SENSOR_READING : produces
@@ -26,11 +26,9 @@ erDiagram
     SESSION {
         string session_id PK
         string device_id FK
-        string source_file
+        string source
         bigint started_at_ms
         bigint ended_at_ms
-        int row_count
-        bigint created_at_ms
     }
 
     SENSOR_READING {
@@ -38,12 +36,10 @@ erDiagram
         string device_id FK
         string session_id FK
         bigint timestamp_ms
-        float lat
-        float lon
         float battery_soc
         float lidar_distance_m
-        float wheel_imbalance_score
         float composite_health_score
+        boolean gps_dropout_long
     }
 
     ALERT {
@@ -52,7 +48,6 @@ erDiagram
         string session_id FK
         string reading_id FK
         string alert_type
-        int severity
-        bigint detected_at_ms
+        string severity
     }
-
+```
