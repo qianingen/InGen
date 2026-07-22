@@ -4,3 +4,8 @@ __pycache__/
 .mypy_cache/
 .DS_Store
 *.pdf
+# Generated SQLite databases
+outputs/**/*.db
+outputs/**/*.db-journal
+outputs/**/*.db-wal
+outputs/**/*.db-shm
