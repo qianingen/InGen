@@ -1,8 +1,12 @@
-The schema separates device, session, sensor_reading, and alert because each table represents a different entity. Device-level metadata is stored once in the device table instead of being repeated across every telemetry row. Session-level metadata, such as source file and row count, is stored in the session table. Timestamp-level telemetry facts and derived features are stored in sensor_reading. Alert events are stored separately because multiple alerts can be associated with a device, session, or reading.
+# Week 4 Dev Log
 
-This avoids update anomalies. For example, changing a device name only requires updating one row in the device table rather than thousands of sensor_reading rows. The schema also avoids insert and delete anomalies because devices and sessions can exist independently of individual readings.
+This week I completed the persistent database layer for the telemetry pipeline. I defined the SQLAlchemy models for devices, telemetry sessions, sensor readings, and alerts, including primary keys, foreign keys, and a unique constraint on `(device_id, timestamp_ms)`. I also added Alembic migrations and verified that a fresh database could upgrade to `head`, downgrade to `base`, and upgrade again successfully.
 
-The schema follows 3NF because non-key fields in each table depend on the key, the whole key, and nothing but the key. Device metadata depends on device_id. Session metadata depends on session_id. Sensor values and derived features depend on reading_id. Alert metadata depends on alert_id.
+The main engineering improvement was replacing the earlier row-level loading path with an idempotent batched upsert workflow. The optimized loader preserved correctness while reducing the one-million-row load time from approximately 8.46 hours to 170.96 seconds. Throughput reached about 37,810 rows per second at 10,000 rows, 21,334 rows per second at 100,000 rows, and 5,849 rows per second at one million rows.
+
+I benchmarked five representative queries before and after adding three targeted indexes. The query that benefited most from indexing was the GPS-dropout time-range query, and why it improved was clear from the query plan: the composite index on `(gps_dropout_long, timestamp_ms)` allowed SQLite to avoid a full-table scan and use a covering index for the requested fields. At one million rows, median latency decreased from 466.23 ms to 0.0756 ms, or approximately 6,167×. This result is query-specific and should not be interpreted as a 6,167× improvement to the entire database.
+
+All 15 before-and-after query results were identical. The full suite finished with 49 tests passing, and black, flake8, and mypy all passed. Next week I will use these validated components as the foundation for the Phase C and Phase D work.
 
 erDiagram
     DEVICE ||--o{ SESSION : has
@@ -51,3 +55,4 @@ erDiagram
         int severity
         bigint detected_at_ms
     }
+

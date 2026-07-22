@@ -1,0 +1,16 @@
+rows,query,results_identical
+10000,Q1 primary-key reading lookup,True
+10000,Q2 device/time unique-index range,True
+10000,Q3 session/time range,True
+10000,Q4 low-health aggregate,True
+10000,Q5 GPS-dropout time range,True
+100000,Q1 primary-key reading lookup,True
+100000,Q2 device/time unique-index range,True
+100000,Q3 session/time range,True
+100000,Q4 low-health aggregate,True
+100000,Q5 GPS-dropout time range,True
+1000000,Q1 primary-key reading lookup,True
+1000000,Q2 device/time unique-index range,True
+1000000,Q3 session/time range,True
+1000000,Q4 low-health aggregate,True
+1000000,Q5 GPS-dropout time range,True

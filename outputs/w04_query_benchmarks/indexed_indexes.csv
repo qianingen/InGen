@@ -1,0 +1,25 @@
+rows,table,index,columns,unique,origin,partial
+10000,device,sqlite_autoindex_device_1,device_id,True,pk,False
+10000,session,sqlite_autoindex_session_1,session_id,True,pk,False
+10000,sensor_reading,idx_bench_reading_gps_timestamp,"gps_dropout_long, timestamp_ms",False,c,False
+10000,sensor_reading,idx_bench_reading_health,composite_health_score,False,c,False
+10000,sensor_reading,idx_bench_reading_session_timestamp,"session_id, timestamp_ms",False,c,False
+10000,sensor_reading,sqlite_autoindex_sensor_reading_2,"device_id, timestamp_ms",True,u,False
+10000,sensor_reading,sqlite_autoindex_sensor_reading_1,reading_id,True,pk,False
+10000,alert,sqlite_autoindex_alert_1,alert_id,True,pk,False
+100000,device,sqlite_autoindex_device_1,device_id,True,pk,False
+100000,session,sqlite_autoindex_session_1,session_id,True,pk,False
+100000,sensor_reading,idx_bench_reading_gps_timestamp,"gps_dropout_long, timestamp_ms",False,c,False
+100000,sensor_reading,idx_bench_reading_health,composite_health_score,False,c,False
+100000,sensor_reading,idx_bench_reading_session_timestamp,"session_id, timestamp_ms",False,c,False
+100000,sensor_reading,sqlite_autoindex_sensor_reading_2,"device_id, timestamp_ms",True,u,False
+100000,sensor_reading,sqlite_autoindex_sensor_reading_1,reading_id,True,pk,False
+100000,alert,sqlite_autoindex_alert_1,alert_id,True,pk,False
+1000000,device,sqlite_autoindex_device_1,device_id,True,pk,False
+1000000,session,sqlite_autoindex_session_1,session_id,True,pk,False
+1000000,sensor_reading,idx_bench_reading_gps_timestamp,"gps_dropout_long, timestamp_ms",False,c,False
+1000000,sensor_reading,idx_bench_reading_health,composite_health_score,False,c,False
+1000000,sensor_reading,idx_bench_reading_session_timestamp,"session_id, timestamp_ms",False,c,False
+1000000,sensor_reading,sqlite_autoindex_sensor_reading_2,"device_id, timestamp_ms",True,u,False
+1000000,sensor_reading,sqlite_autoindex_sensor_reading_1,reading_id,True,pk,False
+1000000,alert,sqlite_autoindex_alert_1,alert_id,True,pk,False

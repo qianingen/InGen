@@ -1,0 +1,16 @@
+rows,query,baseline schema,supplemental indexes,speedup_x,latency_change_pct,assessment
+10000,Q1 primary-key reading lookup,0.0244,0.0286,0.8531468531468532,17.213114754098346,slower with supplemental indexes
+10000,Q2 device/time unique-index range,0.5931,0.5962,0.9948004025494801,0.5226774574270676,no material change (within ±5%)
+10000,Q3 session/time range,2.6328,0.5342,4.92849120179708,-79.70981464600425,faster with supplemental indexes
+10000,Q4 low-health aggregate,1.9672,0.0224,87.82142857142857,-98.86132574217162,faster with supplemental indexes
+10000,Q5 GPS-dropout time range,1.7962,0.0222,80.90990990990991,-98.76405745462642,faster with supplemental indexes
+100000,Q1 primary-key reading lookup,0.032,0.0285,1.1228070175438596,-10.9375,faster with supplemental indexes
+100000,Q2 device/time unique-index range,0.7816,0.6936,1.126874279123414,-11.258955987717501,faster with supplemental indexes
+100000,Q3 session/time range,40.9886,0.6149,66.6589689380387,-98.499826781105,faster with supplemental indexes
+100000,Q4 low-health aggregate,37.3719,0.0463,807.168466522678,-99.87611012552212,faster with supplemental indexes
+100000,Q5 GPS-dropout time range,34.0001,0.0213,1596.24882629108,-99.93735312543198,faster with supplemental indexes
+1000000,Q1 primary-key reading lookup,0.0596,0.0575,1.0365217391304347,-3.5234899328859037,no material change (within ±5%)
+1000000,Q2 device/time unique-index range,1.226,1.1335,1.0816056462284958,-7.544861337683528,faster with supplemental indexes
+1000000,Q3 session/time range,459.0627,1.0222,449.09283897476035,-99.77732889210994,faster with supplemental indexes
+1000000,Q4 low-health aggregate,498.7493,0.466,1070.2774678111587,-99.90656628490507,faster with supplemental indexes
+1000000,Q5 GPS-dropout time range,466.2313,0.0756,6167.080687830688,-99.98378487244422,faster with supplemental indexes

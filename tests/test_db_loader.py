@@ -8,7 +8,7 @@ import pytest
 from sqlalchemy import func, select
 
 from ingen_pydev.db.database import create_sqlite_engine, make_session_factory
-from ingen_pydev.db.loader import load_week3_output
+from ingen_pydev.db.loader import LoadResult, load_week3_output
 from ingen_pydev.db.models import Alert, Device, SensorReading, TelemetrySession
 
 
@@ -18,7 +18,7 @@ def test_load_week3_output_inserts_device_session_readings_and_alerts(
     parquet_path, summary_path = _write_week3_inputs(tmp_path)
     db_path = tmp_path / "w04_telemetry.db"
 
-    load_week3_output(
+    result = load_week3_output(
         parquet_path=parquet_path,
         summary_json_path=summary_path,
         db_path=db_path,
@@ -26,6 +26,12 @@ def test_load_week3_output_inserts_device_session_readings_and_alerts(
         device_name="Aido Rover 001",
         product_anchor="Aido Rover",
     )
+
+    assert isinstance(result, LoadResult)
+    assert result.readings_processed == 5
+    assert result.alerts_processed == 8
+    assert result.elapsed_seconds > 0
+    assert result.rows_per_second > 0
 
     engine = create_sqlite_engine(db_path)
     session_factory = make_session_factory(engine)
@@ -41,7 +47,7 @@ def test_load_week3_output_inserts_device_session_readings_and_alerts(
         assert reading_count == 5
 
         # Alerts are generated from row-level anomaly flags and health thresholds.
-        assert alert_count == 5
+        assert alert_count == 8
 
 
 def test_loader_is_idempotent_on_replay(tmp_path: Path) -> None:
@@ -78,7 +84,56 @@ def test_loader_is_idempotent_on_replay(tmp_path: Path) -> None:
         assert device_count == 1
         assert session_count == 1
         assert reading_count == 5
-        assert alert_count == 5
+        assert alert_count == 8
+
+
+def test_loader_supports_multiple_batches(tmp_path: Path) -> None:
+    base = _make_week3_feature_df()
+    df = pd.concat(
+        [base.iloc[[index % len(base)]] for index in range(12)],
+        ignore_index=True,
+    )
+    df["timestamp_ms"] = [(index + 1) * 1_000 for index in range(12)]
+
+    parquet_path = tmp_path / "twelve_rows.parquet"
+    summary_path = tmp_path / "twelve_rows_summary.json"
+    db_path = tmp_path / "batched_telemetry.db"
+    df.to_parquet(parquet_path, index=False)
+    summary_path.write_text(
+        json.dumps(
+            {
+                "rows_processed": len(df),
+                "rows_flagged": 0,
+                "fields_with_anomalies_detected": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = load_week3_output(
+        parquet_path=parquet_path,
+        summary_json_path=summary_path,
+        db_path=db_path,
+        batch_size=5,
+    )
+
+    assert result.readings_processed == 12
+
+    engine = create_sqlite_engine(db_path)
+    session_factory = make_session_factory(engine)
+    with session_factory() as session:
+        assert session.scalar(select(func.count(SensorReading.reading_id))) == 12
+
+    replay_result = load_week3_output(
+        parquet_path=parquet_path,
+        summary_json_path=summary_path,
+        db_path=db_path,
+        batch_size=5,
+    )
+
+    assert replay_result.readings_processed == 12
+    with session_factory() as session:
+        assert session.scalar(select(func.count(SensorReading.reading_id))) == 12
 
 
 def test_loader_raises_when_summary_row_count_mismatches(tmp_path: Path) -> None:
