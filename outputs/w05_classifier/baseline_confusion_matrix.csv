@@ -1,0 +1,6 @@
+actual,gps,lidar,battery,wheel_torque,ambient_temp
+gps,0,0,0,38,0
+lidar,0,0,0,36,0
+battery,0,0,0,60,0
+wheel_torque,0,0,0,75,0
+ambient_temp,0,0,0,19,0

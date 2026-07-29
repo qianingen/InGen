@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 import pandas as pd
+from sqlalchemy.engine import Engine
 
-from ingen_pydev.db.database import create_sqlite_engine
 from ingen_pydev.db.indexes import apply_optimization_indexes
 from ingen_pydev.db.loader import load_week3_output
 from ingen_pydev.db.queries import (
@@ -33,6 +34,7 @@ def test_all_five_analytic_queries_are_defined() -> None:
 
 def test_query_results_are_identical_before_and_after_indexing(
     tmp_path: Path,
+    sqlite_engine_factory: Callable[[str | Path], Engine],
 ) -> None:
     parquet_path, summary_path = _write_week3_inputs(tmp_path)
     db_path = tmp_path / "w04_telemetry.db"
@@ -46,7 +48,7 @@ def test_query_results_are_identical_before_and_after_indexing(
         product_anchor="Aido Rover",
     )
 
-    engine = create_sqlite_engine(db_path)
+    engine = sqlite_engine_factory(db_path)
     queries = get_analytic_queries()
 
     results_before = {query.name: run_query(engine, query) for query in queries}
@@ -66,7 +68,10 @@ def test_query_results_are_identical_before_and_after_indexing(
         assert plans_after[query.name]
 
 
-def test_index_application_is_repeatable(tmp_path: Path) -> None:
+def test_index_application_is_repeatable(
+    tmp_path: Path,
+    sqlite_engine_factory: Callable[[str | Path], Engine],
+) -> None:
     parquet_path, summary_path = _write_week3_inputs(tmp_path)
     db_path = tmp_path / "w04_telemetry.db"
 
@@ -79,7 +84,7 @@ def test_index_application_is_repeatable(tmp_path: Path) -> None:
         product_anchor="Aido Rover",
     )
 
-    engine = create_sqlite_engine(db_path)
+    engine = sqlite_engine_factory(db_path)
 
     apply_optimization_indexes(engine)
     apply_optimization_indexes(engine)

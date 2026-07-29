@@ -7,7 +7,18 @@ name = "ingen-pydev"
 version = "0.1.0"
 description = "Public-safe Python development scaffold for Physical AI engineering modules."
 requires-python = ">=3.11"
-dependencies = ["pandas", "numpy", "pyarrow", "pandas-stubs", "sqlalchemy", "alembic"]
+dependencies = [
+    "pandas",
+    "numpy",
+    "pyarrow",
+    "pandas-stubs",
+    "sqlalchemy",
+    "alembic",
+    "scikit-learn>=1.5",
+    "matplotlib>=3.8",
+    "scipy>=1.14",
+    "statsmodels>=0.14",
+]
 
 [project.optional-dependencies]
 dev = [
@@ -34,3 +45,7 @@ target-version = ["py311"]
 python_version = "3.11"
 strict = true
 files = ["ingen_pydev", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "sklearn.*", "statsmodels.*"]
+ignore_missing_imports = true

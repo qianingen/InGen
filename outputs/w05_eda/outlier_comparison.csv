@@ -1,0 +1,15 @@
+variable,reference_flag,method,detector_flagged_count,reference_flagged_count,intersection_count,union_count,jaccard_similarity,n
+lidar_distance_m,lidar_distance_m_spike,IQR (1.5 × IQR),23,93,22,94,0.23404255319148937,10000
+lidar_distance_m,lidar_distance_m_spike,|z-score| > 3,28,93,27,94,0.28723404255319152,10000
+battery_soc,battery_soc_spike,IQR (1.5 × IQR),261,321,256,326,0.78527607361963192,10000
+battery_soc,battery_soc_spike,|z-score| > 3,219,321,215,325,0.66153846153846152,10000
+wheel_torque_fl,wheel_torque_fl_spike,IQR (1.5 × IQR),41,98,40,99,0.40404040404040403,10000
+wheel_torque_fl,wheel_torque_fl_spike,|z-score| > 3,41,98,40,99,0.40404040404040403,10000
+wheel_torque_fr,wheel_torque_fr_spike,IQR (1.5 × IQR),47,118,47,118,0.39830508474576271,10000
+wheel_torque_fr,wheel_torque_fr_spike,|z-score| > 3,47,118,47,118,0.39830508474576271,10000
+wheel_torque_rl,wheel_torque_rl_spike,IQR (1.5 × IQR),44,101,44,101,0.43564356435643564,10000
+wheel_torque_rl,wheel_torque_rl_spike,|z-score| > 3,44,101,44,101,0.43564356435643564,10000
+wheel_torque_rr,wheel_torque_rr_spike,IQR (1.5 × IQR),43,96,42,97,0.4329896907216495,10000
+wheel_torque_rr,wheel_torque_rr_spike,|z-score| > 3,43,96,42,97,0.4329896907216495,10000
+ambient_temp_c,ambient_temp_c_spike,IQR (1.5 × IQR),25,102,25,102,0.24509803921568626,10000
+ambient_temp_c,ambient_temp_c_spike,|z-score| > 3,27,102,27,102,0.26470588235294118,10000

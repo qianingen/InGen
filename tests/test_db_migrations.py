@@ -4,6 +4,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+from contextlib import closing
 from pathlib import Path
 
 
@@ -34,7 +35,7 @@ def test_alembic_upgrade_downgrade_and_reupgrade(
 
     _run_alembic(project_root, database_url, "upgrade", "head")
 
-    with sqlite3.connect(db_path) as connection:
+    with closing(sqlite3.connect(db_path)) as connection:
         tables = {
             row[0]
             for row in connection.execute(

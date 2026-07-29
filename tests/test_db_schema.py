@@ -1,19 +1,24 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+from pathlib import Path
+
 import pytest
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy import insert
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 
 from ingen_pydev.db.database import (
     create_all_tables,
-    create_sqlite_engine,
     make_session_factory,
 )
 from ingen_pydev.db.models import Device, SensorReading, TelemetrySession
 
 
-def test_schema_creates_tables() -> None:
-    engine = create_sqlite_engine(":memory:")
+def test_schema_creates_tables(
+    sqlite_engine_factory: Callable[[str | Path], Engine],
+) -> None:
+    engine = sqlite_engine_factory(":memory:")
     create_all_tables(engine)
 
     session_factory = make_session_factory(engine)
@@ -33,8 +38,10 @@ def test_schema_creates_tables() -> None:
         assert result.device_name == "Aido Rover 001"
 
 
-def test_sensor_reading_unique_device_timestamp_constraint() -> None:
-    engine = create_sqlite_engine(":memory:")
+def test_sensor_reading_unique_device_timestamp_constraint(
+    sqlite_engine_factory: Callable[[str | Path], Engine],
+) -> None:
+    engine = sqlite_engine_factory(":memory:")
     create_all_tables(engine)
     session_factory = make_session_factory(engine)
 
@@ -79,8 +86,10 @@ def test_sensor_reading_unique_device_timestamp_constraint() -> None:
             session.commit()
 
 
-def test_sensor_reading_foreign_key_constraint() -> None:
-    engine = create_sqlite_engine(":memory:")
+def test_sensor_reading_foreign_key_constraint(
+    sqlite_engine_factory: Callable[[str | Path], Engine],
+) -> None:
+    engine = sqlite_engine_factory(":memory:")
     create_all_tables(engine)
     session_factory = make_session_factory(engine)
 
@@ -98,8 +107,10 @@ def test_sensor_reading_foreign_key_constraint() -> None:
             session.commit()
 
 
-def test_not_null_constraint_for_device_name() -> None:
-    engine = create_sqlite_engine(":memory:")
+def test_not_null_constraint_for_device_name(
+    sqlite_engine_factory: Callable[[str | Path], Engine],
+) -> None:
+    engine = sqlite_engine_factory(":memory:")
     create_all_tables(engine)
 
     with engine.begin() as connection:

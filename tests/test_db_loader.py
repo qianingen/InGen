@@ -1,19 +1,22 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 import pandas as pd
 import pytest
 from sqlalchemy import func, select
+from sqlalchemy.engine import Engine
 
-from ingen_pydev.db.database import create_sqlite_engine, make_session_factory
+from ingen_pydev.db.database import make_session_factory
 from ingen_pydev.db.loader import LoadResult, load_week3_output
 from ingen_pydev.db.models import Alert, Device, SensorReading, TelemetrySession
 
 
 def test_load_week3_output_inserts_device_session_readings_and_alerts(
     tmp_path: Path,
+    sqlite_engine_factory: Callable[[str | Path], Engine],
 ) -> None:
     parquet_path, summary_path = _write_week3_inputs(tmp_path)
     db_path = tmp_path / "w04_telemetry.db"
@@ -33,7 +36,7 @@ def test_load_week3_output_inserts_device_session_readings_and_alerts(
     assert result.elapsed_seconds > 0
     assert result.rows_per_second > 0
 
-    engine = create_sqlite_engine(db_path)
+    engine = sqlite_engine_factory(db_path)
     session_factory = make_session_factory(engine)
 
     with session_factory() as session:
@@ -50,7 +53,10 @@ def test_load_week3_output_inserts_device_session_readings_and_alerts(
         assert alert_count == 8
 
 
-def test_loader_is_idempotent_on_replay(tmp_path: Path) -> None:
+def test_loader_is_idempotent_on_replay(
+    tmp_path: Path,
+    sqlite_engine_factory: Callable[[str | Path], Engine],
+) -> None:
     parquet_path, summary_path = _write_week3_inputs(tmp_path)
     db_path = tmp_path / "w04_telemetry.db"
 
@@ -72,7 +78,7 @@ def test_loader_is_idempotent_on_replay(tmp_path: Path) -> None:
         product_anchor="Aido Rover",
     )
 
-    engine = create_sqlite_engine(db_path)
+    engine = sqlite_engine_factory(db_path)
     session_factory = make_session_factory(engine)
 
     with session_factory() as session:
@@ -87,7 +93,10 @@ def test_loader_is_idempotent_on_replay(tmp_path: Path) -> None:
         assert alert_count == 8
 
 
-def test_loader_supports_multiple_batches(tmp_path: Path) -> None:
+def test_loader_supports_multiple_batches(
+    tmp_path: Path,
+    sqlite_engine_factory: Callable[[str | Path], Engine],
+) -> None:
     base = _make_week3_feature_df()
     df = pd.concat(
         [base.iloc[[index % len(base)]] for index in range(12)],
@@ -119,7 +128,7 @@ def test_loader_supports_multiple_batches(tmp_path: Path) -> None:
 
     assert result.readings_processed == 12
 
-    engine = create_sqlite_engine(db_path)
+    engine = sqlite_engine_factory(db_path)
     session_factory = make_session_factory(engine)
     with session_factory() as session:
         assert session.scalar(select(func.count(SensorReading.reading_id))) == 12
