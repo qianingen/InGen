@@ -25,6 +25,8 @@ htmlcov/
 
 # Generated package metadata
 *.egg-info/
+.test-run-week5/
+uv.lock
 
 # Python caches
 __pycache__/
