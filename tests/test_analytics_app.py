@@ -169,6 +169,8 @@ def _insert_summary_device(session: Session) -> None:
             product_anchor="Test Product",
         )
     )
+    session.flush()
+
     session.add_all(
         [
             TelemetrySession(
@@ -189,12 +191,16 @@ def _insert_summary_device(session: Session) -> None:
             ),
         ]
     )
+    session.flush()
+
     readings = [
         _make_reading("summary-reading-1", 1_000, 90.0, 59.0, True),
         _make_reading("summary-reading-2", 2_000, 80.0, 60.0, False),
         _make_reading("summary-reading-3", 3_000, 70.0, 40.0, True),
     ]
     session.add_all(readings)
+    session.flush()
+
     session.add_all(
         [
             Alert(
