@@ -66,11 +66,7 @@ def test_build_anomaly_type_reports_all_missing_flag_columns() -> None:
         "battery_soc_spike",
         "ambient_temp_c_spike",
     }
-    values = {
-        flag: [False]
-        for flag in LABEL_SOURCE_FLAGS
-        if flag not in missing_flags
-    }
+    values = {flag: [False] for flag in LABEL_SOURCE_FLAGS if flag not in missing_flags}
 
     with pytest.raises(ValueError, match="Missing anomaly flag columns") as error:
         build_anomaly_type(pd.DataFrame(values))
@@ -132,9 +128,7 @@ def test_profile_classifier_dataset_has_expected_scope() -> None:
 
 def test_classifier_features_exclude_all_label_sources() -> None:
     assert set(CLASSIFIER_FEATURES).isdisjoint(LABEL_SOURCE_FLAGS)
-    assert set(CLASSIFIER_FEATURES).isdisjoint(
-        LEAKAGE_EXCLUDED_DERIVED_FEATURES
-    )
+    assert set(CLASSIFIER_FEATURES).isdisjoint(LEAKAGE_EXCLUDED_DERIVED_FEATURES)
     assert set(ANOMALY_GROUPS) == set(CLASSIFIER_LABELS)
     assert "wheel_imbalance_score" in CLASSIFIER_FEATURES
     assert FEATURE_LEAKAGE_AUDIT["lidar_saturation_rate"][0] is False

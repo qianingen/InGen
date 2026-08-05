@@ -16,11 +16,7 @@ from ingen_pydev.modeling.anomaly import (
 
 
 def _classifier_data(rows_per_class: int = 3) -> tuple[pd.DataFrame, pd.Series[Any]]:
-    labels = [
-        label
-        for label in CLASSIFIER_LABELS
-        for _ in range(rows_per_class)
-    ]
+    labels = [label for label in CLASSIFIER_LABELS for _ in range(rows_per_class)]
     index = pd.RangeIndex(len(labels))
     features = pd.DataFrame(
         np.arange(len(labels) * len(CLASSIFIER_FEATURES), dtype=float).reshape(
@@ -304,7 +300,9 @@ def test_stratified_split_rejects_invalid_test_size(test_size: float) -> None:
     assert len(features) == len(target) == 15
 
 
-def test_classifier_input_validates_alignment_classes_counts_and_missing_values() -> None:
+def test_classifier_input_validates_alignment_classes_counts_and_missing_values() -> (
+    None
+):
     features, target = _classifier_data()
 
     with pytest.raises(ValueError, match="same number of rows"):
@@ -487,7 +485,9 @@ def test_run_pipeline_saves_reproducible_outputs(
         "baseline_confusion_matrix",
         "holdout_comparison",
     }
-    assert all(path.parent == tmp_path and path.is_file() for path in first_paths.values())
+    assert all(
+        path.parent == tmp_path and path.is_file() for path in first_paths.values()
+    )
     assert first_bytes == {
         name: path.read_bytes() for name, path in second_paths.items()
     }

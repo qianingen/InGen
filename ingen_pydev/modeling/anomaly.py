@@ -60,8 +60,7 @@ LEAKAGE_EXCLUDED_DERIVED_FEATURES: tuple[str, ...] = (
 FEATURE_LEAKAGE_AUDIT: dict[str, tuple[bool, str]] = {
     "composite_health_score": (
         False,
-        "Depends on lidar_saturation_rate, which is computed from "
-        "lidar_saturated.",
+        "Depends on lidar_saturation_rate, which is computed from " "lidar_saturated.",
     ),
     "lidar_saturation_rate": (
         False,
@@ -91,8 +90,7 @@ def build_anomaly_type(df: pd.DataFrame) -> pd.Series[Any]:
     columns_with_nulls = source_flags.columns[source_flags.isna().any()].tolist()
     if columns_with_nulls:
         raise ValueError(
-            "Anomaly flag columns contain missing values: "
-            f"{columns_with_nulls}"
+            "Anomaly flag columns contain missing values: " f"{columns_with_nulls}"
         )
 
     group_activity = pd.DataFrame(

@@ -37,9 +37,7 @@ CV_FOLDS = 5
 EXPECTED_INPUT_ROWS = 10_000
 EXPECTED_CLASSIFIER_ROWS = 1_137
 PARQUET_PATH = (
-    Path(__file__).resolve().parent
-    / "outputs"
-    / "profile_cleaned_features.parquet"
+    Path(__file__).resolve().parent / "outputs" / "profile_cleaned_features.parquet"
 )
 
 
@@ -139,9 +137,7 @@ def run_adf_test(
     if clean.nunique() < 2:
         raise ValueError("ADF series must contain variation")
     result = adfuller(clean.to_numpy(), autolag="AIC")
-    critical_values = {
-        str(level): float(value) for level, value in result[4].items()
-    }
+    critical_values = {str(level): float(value) for level, value in result[4].items()}
     return ADFTestResult(
         statistic=float(result[0]),
         p_value=float(result[1]),
@@ -610,9 +606,7 @@ def evaluate_classifier(
         name=name,
         accuracy=float(accuracy_score(y_test, predictions)),
         macro_f1=float(cast(float, report.loc["macro avg", "f1-score"])),
-        weighted_f1=float(
-            cast(float, report.loc["weighted avg", "f1-score"])
-        ),
+        weighted_f1=float(cast(float, report.loc["weighted avg", "f1-score"])),
         classification_report=report,
         confusion_matrix=matrix_df,
     )
@@ -736,7 +730,9 @@ def _print_dataset_summary(
     class_counts: pd.Series[Any],
 ) -> None:
     total_rows = result.train_n + result.test_n
-    print(f"Classifier dataset: n = {total_rows:,}, features = {len(CLASSIFIER_FEATURES)}")
+    print(
+        f"Classifier dataset: n = {total_rows:,}, features = {len(CLASSIFIER_FEATURES)}"
+    )
     print("Scope: five mutually exclusive single-category anomalies")
     print("Excluded targets: normal, overlap")
     print("\nClass counts:")

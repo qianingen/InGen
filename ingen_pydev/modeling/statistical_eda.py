@@ -167,10 +167,7 @@ def calculate_pairwise_correlations(
     if unsupported:
         raise ValueError(f"Unsupported correlation methods: {unsupported}")
 
-    numeric = {
-        column: _numeric_values(df, column)
-        for column in columns
-    }
+    numeric = {column: _numeric_values(df, column) for column in columns}
     rows: list[dict[str, Any]] = []
     for method in methods:
         method_rows: list[dict[str, Any]] = []
@@ -193,9 +190,7 @@ def calculate_pairwise_correlations(
                     }
                 )
 
-        adjusted = benjamini_hochberg(
-            [row["raw_p_value"] for row in method_rows]
-        )
+        adjusted = benjamini_hochberg([row["raw_p_value"] for row in method_rows])
         for row, adjusted_p_value in zip(method_rows, adjusted, strict=True):
             row["bh_adjusted_p_value"] = float(adjusted_p_value)
         rows.extend(method_rows)
@@ -267,11 +262,7 @@ def compare_outlier_detectors(
 ) -> pd.DataFrame:
     """Compare global outlier rules with sliding-window reference flags."""
 
-    required = [
-        column
-        for pair in reference_flags.items()
-        for column in pair
-    ]
+    required = [column for pair in reference_flags.items() for column in pair]
     _require_columns(df, required)
 
     rows: list[dict[str, Any]] = []

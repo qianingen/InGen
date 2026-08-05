@@ -87,10 +87,13 @@ def test_jaccard_computation_and_empty_set_convention() -> None:
     right = np.array([True, False, True, False])
 
     assert jaccard_similarity(left, right) == pytest.approx(1.0 / 3.0)
-    assert jaccard_similarity(
-        np.zeros(4, dtype=bool),
-        np.zeros(4, dtype=bool),
-    ) == 1.0
+    assert (
+        jaccard_similarity(
+            np.zeros(4, dtype=bool),
+            np.zeros(4, dtype=bool),
+        )
+        == 1.0
+    )
 
 
 def test_outlier_comparison_reports_counts_and_jaccard() -> None:
