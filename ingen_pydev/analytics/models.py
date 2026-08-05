@@ -21,3 +21,31 @@ class DeviceSummaryResponse(BaseModel):
     gps_dropout_count: int
     latest_timestamp_ms: int | None
     generated_at_ms: int
+
+
+class AlertResponse(BaseModel):
+    """One alert returned by the paginated alerts endpoint."""
+
+    model_config = ConfigDict(frozen=True)
+
+    alert_id: str
+    device_id: str
+    session_id: str
+    reading_id: str | None
+    alert_type: str
+    severity: int
+    detected_at_ms: int
+    source: str
+    message: str | None
+
+
+class PaginatedAlertsResponse(BaseModel):
+    """A stable page of alerts and its pagination metadata."""
+
+    model_config = ConfigDict(frozen=True)
+
+    items: list[AlertResponse]
+    total: int
+    limit: int
+    offset: int
+    next_offset: int | None

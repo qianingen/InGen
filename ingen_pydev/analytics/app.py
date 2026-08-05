@@ -5,13 +5,23 @@ from __future__ import annotations
 import logging
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import FastAPI, HTTPException, Response, status
+from fastapi import FastAPI, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session, sessionmaker
 
 from ingen_pydev.analytics.cache import TTLCache
-from ingen_pydev.analytics.models import DeviceSummaryResponse
-from ingen_pydev.analytics.queries import DeviceSummaryResult, get_device_summary
+from ingen_pydev.analytics.models import (
+    AlertResponse,
+    DeviceSummaryResponse,
+    PaginatedAlertsResponse,
+)
+from ingen_pydev.analytics.queries import (
+    DeviceSummaryResult,
+    count_matching_alerts,
+    get_alert_page,
+    get_device_summary,
+)
 from ingen_pydev.db.models import current_unix_ms
 
 logger = logging.getLogger(__name__)
@@ -69,6 +79,45 @@ def create_app(
         payload = _build_response(summary, generated_at_ms())
         cache.set(device_id, payload)
         return payload
+
+    @application.get(
+        "/alerts",
+        response_model=PaginatedAlertsResponse,
+        tags=["alerts"],
+    )
+    def read_alerts(
+        since: Annotated[int, Query(ge=0)],
+        limit: Annotated[int, Query(ge=1, le=500)] = 100,
+        offset: Annotated[int, Query(ge=0)] = 0,
+        device_id: str | None = None,
+    ) -> PaginatedAlertsResponse:
+        with session_factory() as session:
+            total = count_matching_alerts(session, since, device_id)
+            alerts = get_alert_page(session, since, limit, offset, device_id)
+
+        page_end = offset + len(alerts)
+        next_offset = page_end if page_end < total else None
+
+        return PaginatedAlertsResponse(
+            items=[
+                AlertResponse(
+                    alert_id=alert.alert_id,
+                    device_id=alert.device_id,
+                    session_id=alert.session_id,
+                    reading_id=alert.reading_id,
+                    alert_type=alert.alert_type,
+                    severity=alert.severity,
+                    detected_at_ms=alert.detected_at_ms,
+                    source=alert.source,
+                    message=alert.message,
+                )
+                for alert in alerts
+            ],
+            total=total,
+            limit=limit,
+            offset=offset,
+            next_offset=next_offset,
+        )
 
     return application
 

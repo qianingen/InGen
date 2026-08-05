@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from sqlalchemy import case, func, select
+from sqlalchemy import BigInteger, Integer, bindparam, case, func, select
 from sqlalchemy.orm import Session
 
 from ingen_pydev.db.models import Alert, Device, SensorReading, TelemetrySession
@@ -24,6 +24,21 @@ class DeviceSummaryResult:
     low_health_count: int
     gps_dropout_count: int
     latest_timestamp_ms: int | None
+
+
+@dataclass(frozen=True)
+class AlertResult:
+    """API-ready values for one alert row."""
+
+    alert_id: str
+    device_id: str
+    session_id: str
+    reading_id: str | None
+    alert_type: str
+    severity: int
+    detected_at_ms: int
+    source: str
+    message: str | None
 
 
 def get_device_summary(
@@ -76,3 +91,75 @@ def get_device_summary(
             int(latest_timestamp_ms) if latest_timestamp_ms is not None else None
         ),
     )
+
+
+def count_matching_alerts(
+    session: Session,
+    since: int,
+    device_id: str | None = None,
+) -> int:
+    """Count alerts at or after ``since`` with an optional exact device filter."""
+
+    statement = select(func.count(Alert.alert_id)).where(
+        Alert.detected_at_ms >= bindparam("since", type_=BigInteger)
+    )
+    parameters: dict[str, object] = {"since": since}
+    if device_id is not None:
+        statement = statement.where(Alert.device_id == bindparam("device_id"))
+        parameters["device_id"] = device_id
+
+    return int(session.scalar(statement, parameters) or 0)
+
+
+def get_alert_page(
+    session: Session,
+    since: int,
+    limit: int,
+    offset: int,
+    device_id: str | None = None,
+) -> list[AlertResult]:
+    """Return one database-paginated alert page in stable chronological order."""
+
+    statement = (
+        select(
+            Alert.alert_id,
+            Alert.device_id,
+            Alert.session_id,
+            Alert.reading_id,
+            Alert.alert_type,
+            Alert.severity,
+            Alert.detected_at_ms,
+            Alert.source,
+            Alert.message,
+        )
+        .where(Alert.detected_at_ms >= bindparam("since", type_=BigInteger))
+        .order_by(Alert.detected_at_ms.asc(), Alert.alert_id.asc())
+        .limit(bindparam("limit", type_=Integer))
+        .offset(bindparam("offset", type_=Integer))
+    )
+    parameters: dict[str, object] = {
+        "since": since,
+        "limit": limit,
+        "offset": offset,
+    }
+    if device_id is not None:
+        statement = statement.where(Alert.device_id == bindparam("device_id"))
+        parameters["device_id"] = device_id
+
+    rows = session.execute(statement, parameters).mappings()
+    return [
+        AlertResult(
+            alert_id=str(row["alert_id"]),
+            device_id=str(row["device_id"]),
+            session_id=str(row["session_id"]),
+            reading_id=(
+                str(row["reading_id"]) if row["reading_id"] is not None else None
+            ),
+            alert_type=str(row["alert_type"]),
+            severity=int(row["severity"]),
+            detected_at_ms=int(row["detected_at_ms"]),
+            source=str(row["source"]),
+            message=str(row["message"]) if row["message"] is not None else None,
+        )
+        for row in rows
+    ]
