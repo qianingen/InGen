@@ -68,9 +68,7 @@ def get_device_summary(
         reading_count=int(reading_count),
         alert_count=int(alert_count or 0),
         average_battery_soc=(
-            float(average_battery_soc)
-            if average_battery_soc is not None
-            else None
+            float(average_battery_soc) if average_battery_soc is not None else None
         ),
         low_health_count=int(low_health_count),
         gps_dropout_count=int(gps_dropout_count),
