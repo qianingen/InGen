@@ -155,12 +155,8 @@ def test_adjacent_pages_have_no_duplicate_alert_ids(
 def test_ordering_is_deterministic_by_timestamp_then_alert_id(
     alerts_client: TestClient,
 ) -> None:
-    first = alerts_client.get(
-        "/alerts", params={"since": SINCE, "limit": 13}
-    ).json()
-    second = alerts_client.get(
-        "/alerts", params={"since": SINCE, "limit": 13}
-    ).json()
+    first = alerts_client.get("/alerts", params={"since": SINCE, "limit": 13}).json()
+    second = alerts_client.get("/alerts", params={"since": SINCE, "limit": 13}).json()
 
     first_order = [
         (item["detected_at_ms"], item["alert_id"]) for item in first["items"]
@@ -339,9 +335,7 @@ def _insert_alert_test_data(session: Session) -> None:
                 alert_id=alert_id,
                 device_id=device_id,
                 session_id=_session_id(device_id),
-                reading_id=(
-                    None if alert_id == "alert-013" else f"reading-{alert_id}"
-                ),
+                reading_id=(None if alert_id == "alert-013" else f"reading-{alert_id}"),
                 alert_type="test_alert",
                 severity=1,
                 detected_at_ms=detected_at_ms,
