@@ -54,3 +54,15 @@ files = ["ingen_pydev", "tests"]
 [[tool.mypy.overrides]]
 module = ["scipy.*", "sklearn.*", "statsmodels.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["fastapi", "fastapi.*", "pydantic", "pydantic.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["ingen_pydev.analytics.models"]
+disallow_subclassing_any = false
+
+[[tool.mypy.overrides]]
+module = ["ingen_pydev.analytics.app"]
+disallow_untyped_decorators = false
