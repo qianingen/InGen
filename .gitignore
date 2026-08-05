@@ -8,4 +8,24 @@ __pycache__/
 outputs/**/*.db
 outputs/**/*.db-journal
 outputs/**/*.db-wal
-outputs/**/*.db-shm
+outputs/**/*.db-shm 
+# Local Python environments
+.venv/
+.venv*/
+venv/
+venv*/
+
+# Test and tool artifacts
+.test-tmp/
+.pytest_cache/
+.mypy_cache/
+.pre-commit-cache/
+htmlcov/
+.coverage
+
+# Generated package metadata
+*.egg-info/
+
+# Python caches
+__pycache__/
+*.py[cod]
