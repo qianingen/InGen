@@ -41,6 +41,14 @@ class AlertResult:
     message: str | None
 
 
+@dataclass(frozen=True)
+class BatteryHistoryResult:
+    """Chronologically ordered battery history for one existing device."""
+
+    device_id: str
+    battery_soc: tuple[float, ...]
+
+
 def get_device_summary(
     session: Session,
     device_id: str,
@@ -163,3 +171,24 @@ def get_alert_page(
         )
         for row in rows
     ]
+
+
+def get_battery_history(
+    session: Session,
+    device_id: str,
+) -> BatteryHistoryResult | None:
+    """Return stable chronological battery history, or ``None`` if absent."""
+
+    device = session.get(Device, device_id)
+    if device is None:
+        return None
+
+    statement = (
+        select(SensorReading.battery_soc)
+        .where(SensorReading.device_id == bindparam("device_id"))
+        .order_by(SensorReading.timestamp_ms.asc(), SensorReading.reading_id.asc())
+    )
+    battery_soc = tuple(
+        float(value) for value in session.scalars(statement, {"device_id": device_id})
+    )
+    return BatteryHistoryResult(device_id=device.device_id, battery_soc=battery_soc)

@@ -11,8 +11,14 @@ from fastapi import FastAPI, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session, sessionmaker
 
 from ingen_pydev.analytics.cache import TTLCache
+from ingen_pydev.analytics.forecast import (
+    BatteryForecastServiceError,
+    build_battery_forecast,
+)
 from ingen_pydev.analytics.models import (
     AlertResponse,
+    BatteryForecastPoint,
+    BatteryForecastResponse,
     DeviceSummaryResponse,
     PaginatedAlertsResponse,
 )
@@ -20,6 +26,7 @@ from ingen_pydev.analytics.queries import (
     DeviceSummaryResult,
     count_matching_alerts,
     get_alert_page,
+    get_battery_history,
     get_device_summary,
 )
 from ingen_pydev.db.models import current_unix_ms
@@ -117,6 +124,59 @@ def create_app(
             limit=limit,
             offset=offset,
             next_offset=next_offset,
+        )
+
+    @application.get(
+        "/forecast/battery/{device_id}",
+        response_model=BatteryForecastResponse,
+        tags=["forecasts"],
+    )
+    def read_battery_forecast(
+        device_id: str,
+        horizon: Annotated[int, Query(ge=1, le=300)] = 60,
+    ) -> BatteryForecastResponse:
+        with session_factory() as session:
+            history = get_battery_history(session, device_id)
+
+        if history is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device not found",
+            )
+
+        try:
+            forecast = build_battery_forecast(history.battery_soc, horizon)
+        except BatteryForecastServiceError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(exc),
+            ) from exc
+        except Exception as exc:
+            logger.exception(
+                "battery_forecast_failed device_id=%r horizon=%d",
+                device_id,
+                horizon,
+            )
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Battery forecast failed",
+            ) from exc
+
+        return BatteryForecastResponse(
+            device_id=history.device_id,
+            model_order=forecast.model_order,
+            history_n=forecast.history_n,
+            horizon=forecast.horizon,
+            generated_at_ms=generated_at_ms(),
+            points=[
+                BatteryForecastPoint(
+                    step=point.step,
+                    forecast_battery_soc=point.forecast_battery_soc,
+                    lower_95=point.lower_95,
+                    upper_95=point.upper_95,
+                )
+                for point in forecast.points
+            ],
         )
 
     return application

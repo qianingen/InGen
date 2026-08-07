@@ -49,3 +49,27 @@ class PaginatedAlertsResponse(BaseModel):
     limit: int
     offset: int
     next_offset: int | None
+
+
+class BatteryForecastPoint(BaseModel):
+    """One step in a battery state-of-charge forecast."""
+
+    model_config = ConfigDict(frozen=True)
+
+    step: int
+    forecast_battery_soc: float
+    lower_95: float
+    upper_95: float
+
+
+class BatteryForecastResponse(BaseModel):
+    """Battery forecast metadata and fixed-horizon point estimates."""
+
+    model_config = ConfigDict(frozen=True)
+
+    device_id: str
+    model_order: tuple[int, int, int]
+    history_n: int
+    horizon: int
+    generated_at_ms: int
+    points: list[BatteryForecastPoint]
